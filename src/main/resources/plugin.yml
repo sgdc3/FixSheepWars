@@ -1,0 +1,5 @@
+name: FixSheepWars
+version: ${project.version}
+main: it.feargames.fixsheepwars.FixSheepWars
+depend: [UltimateSheepWars]
+authors: [sgdc3]
