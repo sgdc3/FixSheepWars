@@ -16,12 +16,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 @Transform(acK.class)
 public enum TeamTransformer {
-    BLUE,
-    RED,
-    SPEC;
+    ;
 
     private Material material;
-    private byte byteColor;
+    private DyeColor dyecolor;
 
     @Inject(InjectionType.OVERRIDE)
     public ItemStack getIcon(Player p) {
@@ -29,9 +27,13 @@ public enum TeamTransformer {
         if (this.material == null) {
             return iconItem;
         } else {
-            iconItem = new ItemStack(this.material, 1, this.byteColor);
+            if(material == Material.BANNER) {
+                iconItem = new ItemStack(this.material, 1, dyecolor.getDyeData());
+            } else {
+                iconItem = new ItemStack(this.material, 1, dyecolor.getWoolData());
+            }
             ItemMeta iconMeta = iconItem.getItemMeta();
-            iconMeta.setDisplayName(this == BLUE ? adB.getMessage(p, "" + ChatColor.BLUE, adB.JOIN_BLUE_ITEM, "") : adB.getMessage(p, "" + ChatColor.RED, adB.JOIN_RED_ITEM, ""));
+            iconMeta.setDisplayName(dyecolor == DyeColor.BLUE ? adB.getMessage(p, "" + ChatColor.BLUE, adB.JOIN_BLUE_ITEM, "") : adB.getMessage(p, "" + ChatColor.RED, adB.JOIN_RED_ITEM, ""));
             iconItem.setItemMeta(iconMeta);
             return iconItem;
         }

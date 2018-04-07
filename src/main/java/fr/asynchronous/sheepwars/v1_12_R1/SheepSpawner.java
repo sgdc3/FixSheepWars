@@ -13,16 +13,20 @@ public class SheepSpawner implements ajG {
 
     @Override
     public Sheep spawnSheepStatic(Location location, Player player, UltimateSheepWarsPlugin plugin) {
+        Location playerLocation = player.getLocation();
         CustomSheep customSheep = new CustomSheep(((CraftWorld) location.getWorld()).getHandle(), player, plugin);
-        customSheep.setPosition(location.getX(), location.getY(), location.getZ());
+        customSheep.setPositionRotation(location.getX(), location.getY(), location.getZ(), playerLocation.getYaw(), playerLocation.getPitch());
+        customSheep.setHeadRotation(playerLocation.getYaw());
         ((CraftWorld) location.getWorld()).getHandle().addEntity(customSheep);
         return (Sheep) customSheep.getBukkitEntity();
     }
 
     @Override
     public Sheep spawnSheep(Location location, Player player, acI sheep, UltimateSheepWarsPlugin plugin) {
+        Location playerLocation = player.getLocation();
         CustomSheep customSheep = new CustomSheep(((CraftWorld) location.getWorld()).getHandle(), player, sheep, plugin);
-        customSheep.setPosition(location.getX(), location.getY(), location.getZ());
+        customSheep.setPositionRotation(location.getX(), location.getY(), location.getZ(), playerLocation.getYaw(), playerLocation.getPitch());
+        customSheep.setHeadRotation(playerLocation.getYaw());
         ((CraftWorld) location.getWorld()).getHandle().addEntity(customSheep);
         return (Sheep) customSheep.getBukkitEntity();
     }

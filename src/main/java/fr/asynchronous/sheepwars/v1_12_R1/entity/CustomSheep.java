@@ -30,11 +30,6 @@ public class CustomSheep extends EntitySheep {
     private int noclipDistance;
     private UltimateSheepWarsPlugin plugin;
 
-    public CustomSheep(World world) {
-        super(world);
-        this.explosion = true;
-    }
-
     public CustomSheep(World world, Player player, UltimateSheepWarsPlugin plugin) {
         super(world);
         this.explosion = true;
@@ -52,7 +47,7 @@ public class CustomSheep extends EntitySheep {
         this.defaultTicks = this.ticks;
         this.ground = !sheep.isOnGround();
         this.drop = sheep.isDrop();
-        this.noclip = true;
+        this.noclip = false;
         this.noclipDistance = aiA.getViewField(player, 6);
         this.setColor(EnumColor.fromColorIndex(sheep.getColor().getWoolData()));
         sheep.getAction().onSpawn(player, this.getBukkitSheep(), plugin);

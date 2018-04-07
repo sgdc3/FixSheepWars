@@ -11,39 +11,36 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 
 public class EntityMeteor extends EntityFireball {
-    private final float speedModifier = 1.05F;
-    private final float impactPower = 3.0F;
-
-    public EntityMeteor(World world) {
-        super(world);
-    }
+    private final float SPEED_MODIFIER = 1.05F;
+    private final float IMPACT_POWER = 3.0F;
 
     public EntityMeteor(World world, Player shooter) {
         super(world);
         if (shooter instanceof EntityLiving) {
             this.shooter = (EntityLiving) shooter;
         }
+        this.motY = -50;
     }
 
+    /*
     @Override
     public void B_() {
         if (this.inWater) {
-            this.world.createExplosion(this.shooter, this.locX, this.locY, this.locZ, 3.0F, true, true);
-            this.die();
+            a((MovingObjectPosition) null);
         } else {
             super.as();
-            this.motX *= 1.0499999523162842D;
-            this.motY *= 1.0499999523162842D;
-            this.motZ *= 1.0499999523162842D;
+            this.motX *= SPEED_MODIFIER;
+            this.motY *= SPEED_MODIFIER;
+            this.motZ *= SPEED_MODIFIER;
             this.playParticles(acG.EXPLOSION_NORMAL, this.getBukkitEntity().getLocation(), 0.0F, 0.0F, 0.0F, 1, 0.1F);
             this.playParticles(acG.SMOKE_NORMAL, this.getBukkitEntity().getLocation(), 0.0F, 0.0F, 0.0F, 1, 0.2F);
         }
-
     }
+    */
 
     @Override
     public void a(MovingObjectPosition movingobjectposition) {
-        this.world.createExplosion(this.shooter, this.locX, this.locY, this.locZ, 3.0F, true, true);
+        this.world.createExplosion(this.shooter, this.locX, this.locY, this.locZ, IMPACT_POWER, true, true);
         this.die();
     }
 
