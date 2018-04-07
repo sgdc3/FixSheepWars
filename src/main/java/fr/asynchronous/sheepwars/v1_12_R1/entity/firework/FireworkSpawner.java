@@ -1,5 +1,10 @@
 package fr.asynchronous.sheepwars.v1_12_R1.entity.firework;
 
+import com.comphenix.packetwrapper.WrapperPlayServerEntityDestroy;
+import com.comphenix.packetwrapper.WrapperPlayServerEntityMetadata;
+import com.comphenix.packetwrapper.WrapperPlayServerEntityStatus;
+import com.comphenix.packetwrapper.WrapperPlayServerSpawnEntity;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -7,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,8 +27,22 @@ public class FireworkSpawner {
         UUID entityUuid = UUID.randomUUID();
 
         //Spawn firework entity
-        new PH_PO_SpawnEntity(entityId, entityUuid, 76/*ID of firework entity type*/, 0, location.getX(), location.getY(), location.getZ(),
-                location.getYaw(), location.getPitch(), 0, 0, 0).send(players);
+        WrapperPlayServerSpawnEntity spawnPacket = new WrapperPlayServerSpawnEntity();
+        spawnPacket.setEntityID(entityId);
+        spawnPacket.setUniqueId(entityUuid);
+        spawnPacket.setType(76);
+        spawnPacket.setObjectData(0);
+        spawnPacket.setX(location.getX());
+        spawnPacket.setY(location.getY());
+        spawnPacket.setZ(location.getZ());
+        spawnPacket.setYaw(location.getYaw());
+        spawnPacket.setPitch(location.getPitch());
+        spawnPacket.setOptionalSpeedX(0);
+        spawnPacket.setOptionalSpeedY(0);
+        spawnPacket.setOptionalSpeedZ(0);
+        for (Player player : players) {
+            spawnPacket.sendPacket(player);
+        }
 
         //From here we put things inside a try-catch to make sure the player always receives a destroy packet (otherwise their client will crash)
         try {
@@ -34,27 +52,36 @@ public class FireworkSpawner {
             meta.addEffect(effect);
             item.setItemMeta(meta);
 
-            jDataWatcherItem<Byte> i1 = new jDataWatcherItem<>(jDataWatcherObject.entity_byte, (byte) 0);
-            jDataWatcherItem<Integer> i2 = new jDataWatcherItem<>(jDataWatcherObject.entity_int, 300);
-            jDataWatcherItem<String> i3 = new jDataWatcherItem<>(jDataWatcherObject.entity_string, "");
-            jDataWatcherItem<Boolean> i4 = new jDataWatcherItem<>(jDataWatcherObject.entity_boolean1, false);
-            jDataWatcherItem<Boolean> i5 = new jDataWatcherItem<>(jDataWatcherObject.entity_boolean2, false);
-            jDataWatcherItem<ItemStack> i6 = new jDataWatcherItem<>(jDataWatcherObject.entityfireworks_itemstack, item);
+            WrapperPlayServerEntityMetadata metadataPacket = new WrapperPlayServerEntityMetadata();
+            metadataPacket.setEntityID(entityId);
 
-            i1.setFlag(false);
-            i2.setFlag(false);
-            i3.setFlag(false);
-            i4.setFlag(false);
-            i5.setFlag(false);
-            i6.setFlag(false);
-
-            new PH_PO_EntityMetadata(entityId, Arrays.asList(i1, i2, i3, i4, i5, i6)).send(players);
+            WrappedDataWatcher metadata = new WrappedDataWatcher();
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(0, WrappedDataWatcher.Registry.get(Byte.class)), (byte) 0);
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(1, WrappedDataWatcher.Registry.get(Integer.class)), 300);
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(2, WrappedDataWatcher.Registry.get(String.class)), "");
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(3, WrappedDataWatcher.Registry.get(Boolean.class)), false);
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(4, WrappedDataWatcher.Registry.get(Boolean.class)), false);
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(5, WrappedDataWatcher.Registry.get(Boolean.class)), false);
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(6, WrappedDataWatcher.Registry.getItemStackSerializer(false)), item);
+            metadata.setObject(new WrappedDataWatcher.WrappedDataWatcherObject(7, WrappedDataWatcher.Registry.get(Integer.class)), 0);
+            for (Player player : players) {
+                metadataPacket.sendPacket(player);
+            }
 
             //Play explosion effect
-            new PH_PO_EntityStatus(entityId, (byte) 17/*Explode status ID*/).send(players);
+            WrapperPlayServerEntityStatus statusPacket = new WrapperPlayServerEntityStatus();
+            statusPacket.setEntityID(entityId);
+            statusPacket.setEntityStatus((byte) 17);
+            for (Player player : players) {
+                statusPacket.sendPacket(player);
+            }
         } finally {
             //Send destroy packet (very important, otherwise the client will crash)
-            new PH_PO_EntityDestroy(entityId).send(players);
+            WrapperPlayServerEntityDestroy destroyPacket = new WrapperPlayServerEntityDestroy();
+            destroyPacket.setEntityIds(new int[]{entityId});
+            for (Player player : players) {
+                destroyPacket.sendPacket(player);
+            }
         }
     }
 

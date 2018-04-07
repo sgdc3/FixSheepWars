@@ -1,9 +1,9 @@
 package it.feargames.fixsheepwars;
 
+import com.destroystokyo.paper.event.player.PlayerAdvancementCriterionGrantEvent;
 import me.yamakaja.runtimetransformer.RuntimeTransformer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class FixSheepWars extends JavaPlugin implements Listener {
@@ -24,8 +24,8 @@ public final class FixSheepWars extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    public void onCreatureSpawn(CreatureSpawnEvent event) {
-        getLogger().severe("ENTITY " + event.getEntity().toString());
+    public void onAdvancement(PlayerAdvancementCriterionGrantEvent event) {
+        event.setCancelled(true);
     }
 
 }

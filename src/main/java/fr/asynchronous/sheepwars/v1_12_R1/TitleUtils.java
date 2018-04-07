@@ -12,7 +12,7 @@ public class TitleUtils extends ajB {
     @Override
     public void titlePacket(Player player, Integer fadeIn, Integer stay, Integer fadeOut, String title, String subtitle) {
         PlayerConnection connection = ((CraftPlayer) player).getHandle().playerConnection;
-        PacketPlayOutTitle packetPlayOutTimes = new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.TIMES, null, fadeIn, stay, fadeOut);
+        PacketPlayOutTitle packetPlayOutTimes = new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.TIMES, (IChatBaseComponent) null, fadeIn, stay, fadeOut);
         connection.sendPacket(packetPlayOutTimes);
         IChatBaseComponent titleMain;
         PacketPlayOutTitle packetPlayOutTitle;

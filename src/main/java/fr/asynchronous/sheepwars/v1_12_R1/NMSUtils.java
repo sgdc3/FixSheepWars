@@ -10,6 +10,7 @@ import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftArrow;
 import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
@@ -92,11 +93,13 @@ public class NMSUtils implements ajE {
         WorldBorder worldBorder;
         if (activate) {
             worldBorder = new WorldBorder();
+            worldBorder.world = ((CraftWorld)player.getWorld()).getHandle();
             worldBorder.setSize(1.0D);
             worldBorder.setCenter(player.getLocation().getX() + 10000.0D, player.getLocation().getZ() + 10000.0D);
             ((CraftPlayer) player).getHandle().playerConnection.sendPacket(new PacketPlayOutWorldBorder(worldBorder, PacketPlayOutWorldBorder.EnumWorldBorderAction.INITIALIZE));
         } else {
             worldBorder = new WorldBorder();
+            worldBorder.world = ((CraftWorld)player.getWorld()).getHandle();
             worldBorder.setSize(3.0E7D);
             worldBorder.setCenter(player.getLocation().getX(), player.getLocation().getZ());
             ((CraftPlayer) player).getHandle().playerConnection.sendPacket(new PacketPlayOutWorldBorder(worldBorder, PacketPlayOutWorldBorder.EnumWorldBorderAction.INITIALIZE));
