@@ -5,10 +5,8 @@ import fr.asynchronous.sheepwars.a.UltimateSheepWarsPlugin;
 import fr.asynchronous.sheepwars.a.ac.acG;
 import fr.asynchronous.sheepwars.a.ac.acH;
 import fr.asynchronous.sheepwars.a.ac.acI;
-import fr.asynchronous.sheepwars.a.ai.aiA;
 import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -16,18 +14,18 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.lang.reflect.Field;
-import java.util.Iterator;
 
 public class CustomSheep extends EntitySheep {
+
     private acI sheep;
     private Player player;
-    private World world;
+    //private World world;
     private boolean explosion;
     private boolean ground;
     private long defaultTicks;
     private long ticks;
     private boolean drop;
-    private int noclipDistance;
+    //private int noclipDistance;
     private UltimateSheepWarsPlugin plugin;
 
     public CustomSheep(World world, Player player, UltimateSheepWarsPlugin plugin) {
@@ -35,20 +33,20 @@ public class CustomSheep extends EntitySheep {
         this.explosion = true;
         this.player = player;
         this.plugin = plugin;
-        this.world = ((CraftWorld) player.getWorld()).getHandle();
+        //this.world = ((CraftWorld) player.getWorld()).getHandle();
     }
 
     public CustomSheep(World world, Player player, acI sheep, UltimateSheepWarsPlugin plugin) {
         this(world, player, plugin);
-        this.getNavigation();
-        this.a(0.9F, 1.3F);
+        //this.getNavigation();
+        this.setSize(0.9F, 1.3F);
         this.sheep = sheep;
-        this.ticks = sheep.getDuration() == -1 ? 9223372036854775807L : (long) (sheep.getDuration() * 20);
+        this.ticks = sheep.getDuration() == -1 ? Long.MAX_VALUE : (long) (sheep.getDuration() * 20);
         this.defaultTicks = this.ticks;
         this.ground = !sheep.isOnGround();
         this.drop = sheep.isDrop();
-        this.noclip = false;
-        this.noclipDistance = aiA.getViewField(player, 6);
+        //this.noclip = true;
+        //this.noclipDistance = aiA.getViewField(player, 6);
         this.setColor(EnumColor.fromColorIndex(sheep.getColor().getWoolData()));
         sheep.getAction().onSpawn(player, this.getBukkitSheep(), plugin);
 
@@ -80,9 +78,9 @@ public class CustomSheep extends EntitySheep {
         } else {
             this.fireProof = true;
         }
-
     }
 
+    /*
     @Override
     public void move(EnumMoveType enummovetype, double d0, double d1, double d2) {
         if (this.noclip && this.player.getLocation().distance(this.getBukkitEntity().getLocation()) >= (double) this.noclipDistance) {
@@ -91,75 +89,71 @@ public class CustomSheep extends EntitySheep {
 
         super.move(enummovetype, d0, d1, d2);
     }
+    */
 
     @Override
     public void f(double d0, double d1, double d2) {
     }
 
     @Override
-    public void e(float sideMot, float forMot) {
-        if (this.sheep != null && this.onGround && this.sheep == acI.REMOTE && this.passengers.size() == 1) {
-            for (Iterator var4 = this.passengers.iterator(); var4.hasNext(); this.aF += this.aD) {
-                Entity passenger = (Entity) var4.next();
-                if (passenger == null || !(passenger instanceof EntityHuman) || this.sheep != acI.REMOTE) {
-                    super.g(sideMot, forMot);
-                    this.P = 1.0F;
-                    this.aO = 0.02F;
-                    return;
-                }
+    public void a(float sizeControl, float upDownControl, float forwardControl) {
+        if (this.sheep == acI.REMOTE && this.onGround && !passengers.isEmpty()) {
+            EntityLiving passenger = (EntityLiving) this.passengers.get(0);
 
-                this.lastYaw = this.yaw = passenger.yaw;
-                this.pitch = passenger.pitch * 0.5F;
-                this.setYawPitch(this.yaw, this.pitch);
-                this.aN = this.aL = this.yaw;
-                sideMot = ((EntityLiving) passenger).be * 0.15F;
-                forMot = ((EntityLiving) passenger).bf * 0.15F;
-                if (forMot <= 0.0F) {
-                    forMot *= 0.15F;
-                }
+            // Pitch/Yaw
+            this.yaw = passenger.yaw;
+            this.lastYaw = this.yaw;
+            this.pitch = passenger.pitch * 0.5F;
+            this.setYawPitch(this.yaw, this.pitch);
+            this.aN = this.yaw;
+            this.aP = this.aN;
 
-                Field jump;
+            // XZ movement
+            sizeControl = passenger.be * 0.15F;
+            forwardControl = passenger.bg * 0.15F;
+            if (forwardControl < 0.0F) {
+                forwardControl *= 0.45F; // Backward multiplier
+            }
+
+            // Jump logic
+            if (this.onGround) {
                 try {
-                    jump = EntityLiving.class.getDeclaredField("bd");
-                } catch (NoSuchFieldException | SecurityException e) {
+                    Field jump = EntityLiving.class.getDeclaredField("bd");
+                    jump.setAccessible(true);
+                    if (jump.getBoolean(passenger)) {
+                        this.motY = 0.6D; // Jump force
+                        this.impulse = true;
+                        if (forwardControl > 0.0F) {
+                            float f3 = MathHelper.sin(this.yaw * 0.017453292F);
+                            float f4 = MathHelper.cos(this.yaw * 0.017453292F);
+                            this.motX += (double)(-0.25F * f3);
+                            this.motZ += (double)(0.25F * f4);
+                        }
+                    }
+                } catch (NoSuchFieldException | IllegalAccessException e) {
                     e.printStackTrace();
                     return;
                 }
-
-                jump.setAccessible(true);
-                double jumpHeight;
-                if (this.onGround) {
-                    try {
-                        if (jump.getBoolean(passenger)) {
-                            jumpHeight = 0.5D;
-                            this.motY = jumpHeight;
-                        }
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                        return;
-                    }
-                }
-
-                this.P = 1.0F;
-                this.aP = (float) this.bW() * 0.1F;
-                if (!this.world.isClientSide) {
-                    this.k(0.35F);
-                    super.g(sideMot, forMot);
-                }
-
-                this.aC = this.aD;
-                jumpHeight = this.locX - this.lastX;
-                double d1 = this.locZ - this.lastZ;
-                float f4 = MathHelper.sqrt(jumpHeight * jumpHeight + d1 * d1) * 4.0F;
-                if (f4 > 1.0F) {
-                    f4 = 1.0F;
-                }
-
-                this.aD += (f4 - this.aD) * 0.4F;
             }
-        }
 
-        super.g(sideMot, forMot);
+            this.aR = this.cy() * 0.1F;
+            this.k(0.7F); // Movement speed
+            super.a(sizeControl, upDownControl, forwardControl); // Actually move
+
+            this.aF = this.aG;
+            double d0 = this.locX - this.lastX;
+            double d1 = this.locZ - this.lastZ;
+            float f5 = MathHelper.sqrt(d0 * d0 + d1 * d1) * 4.0F;
+            if (f5 > 1.0F) {
+                f5 = 1.0F;
+            }
+
+            this.aG += (f5 - this.aG) * 0.4F;
+            this.aH += this.aG;
+        } else {
+            this.aR = 0.02F;
+            super.a(sizeControl, upDownControl, forwardControl);
+        }
     }
 
     @Override
